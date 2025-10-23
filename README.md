@@ -2,6 +2,16 @@
 
 🗺️ Интерактивная карта Москвы с точками активного отдыха от блогера Артёма.
 
+## 🌐 Демо-версия
+
+**Рабочий сайт:** [https://Eygenio.pythonanywhere.com/](https://Eygenio.pythonanywhere.com/)
+
+**Тестовые данные:**
+- Главная страница с картой: [https://Eygenio.pythonanywhere.com/](https://Eygenio.pythonanywhere.com/)
+- Админка Django: [https://Eygenio.pythonanywhere.com/admin/](https://Eygenio.pythonanywhere.com/admin/)
+- API всех мест: [https://Eygenio.pythonanywhere.com/places/](https://Eygenio.pythonanywhere.com/places/)
+- API деталей места: [https://Eygenio.pythonanywhere.com/places/1/](https://Eygenio.pythonanywhere.com/places/8/)
+
 ## Особенности
 
 - 🗺️ Интерактивная карта с метками интересных мест
