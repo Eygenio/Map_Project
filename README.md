@@ -10,7 +10,7 @@
 - Главная страница с картой: [https://Eygenio.pythonanywhere.com/](https://Eygenio.pythonanywhere.com/)
 - Админка Django: [https://Eygenio.pythonanywhere.com/admin/](https://Eygenio.pythonanywhere.com/admin/)
 - API всех мест: [https://Eygenio.pythonanywhere.com/places/](https://Eygenio.pythonanywhere.com/places/)
-- API деталей места: [https://Eygenio.pythonanywhere.com/places/1/](https://Eygenio.pythonanywhere.com/places/8/)
+- API деталей места: [https://Eygenio.pythonanywhere.com/places/8/](https://Eygenio.pythonanywhere.com/places/8/)
 
 ## Особенности
 
