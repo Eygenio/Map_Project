@@ -7,8 +7,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Секретный ключ для криптографических операций Django
 # В продакшене должен быть скрыт в переменных окружения
-SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default-key-for-dev")
-DEBUG = os.getenv("DEBUG", "True") == "True"
+
+# SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-default-key-for-dev")
+# DEBUG = os.getenv("DEBUG", "True") == "True"
+
+SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-here')
+DEBUG = False
 
 # Список разрешенных доменов для работы приложения
 # Защищает от атак подмены хоста
