@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта интересных мест Москвы</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        #map {
+            flex: 1;
+            height: 100%;
+        }
+        #sidebar {
+            width: 400px;
+            background: #f8f9fa;
+            border-left: 1px solid #dee2e6;
+            padding: 20px;
+            overflow-y: auto;
+            display: none; /* Сначала скрыта */
+        }
+        #sidebar.active {
+            display: block;
+        }
+        .place-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .place-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .place-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .place-description {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .place-coordinates {
+            color: #666;
+            font-size: 14px;
+        }
+        .image-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .close-sidebar {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        .close-sidebar:hover {
+            background: #c82333;
+        }
+        .empty-state {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="map"></div>
+        <div id="sidebar">
+            <button class="close-sidebar" onclick="closeSidebar()">× Закрыть</button>
+            <div id="sidebar-content">
+                <div class="empty-state">
+                    <h3>Выберите место на карте</h3>
+                    <p>Нажмите на метку, чтобы увидеть подробную информацию</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Инициализация карты (центр на Москве)
+        var map = L.map('map').setView([55.7558, 37.6173], 10);
+        var currentMarker = null;
+
+        // Добавление слоя карты
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Загрузка данных с сервера
+        fetch('/places/')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Получены данные:', data);
+
+                data.features.forEach(feature => {
+                    var marker = L.marker([
+                        feature.geometry.coordinates[1], // lat
+                        feature.geometry.coordinates[0]  // lng
+                    ]).addTo(map);
+
+                    // Добавляем обработчик клика на маркер
+                    marker.on('click', function() {
+                        loadPlaceDetails(feature.properties.placeId, marker);
+                    });
+
+                    // Простой попап при наведении
+                    marker.bindPopup(`
+                        <div style="padding: 5px;">
+                            <strong>${feature.properties.title}</strong>
+                            <br>Нажмите для подробностей
+                        </div>
+                    `);
+                });
+
+                // Если есть места, подгоняем карту чтобы показать все маркеры
+                if (data.features.length > 0) {
+                    var group = new L.featureGroup(data.features.map(feature =>
+                        L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]])
+                    ));
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки данных:', error);
+                // Показываем ошибку на карте
+                L.popup()
+                    .setLatLng([55.7558, 37.6173])
+                    .setContent('Ошибка загрузки данных: ' + error.message)
+                    .openOn(map);
+            });
+
+        // Функция для загрузки деталей места
+        function loadPlaceDetails(placeId, marker) {
+            // Подсвечиваем текущий маркер
+            if (currentMarker) {
+                currentMarker.setIcon(defaultIcon);
+            }
+            currentMarker = marker;
+            marker.setIcon(highlightedIcon);
+
+            fetch(`/places/${placeId}/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(place => {
+                    displayPlaceDetails(place);
+                    openSidebar();
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки деталей:', error);
+                    alert('Ошибка загрузки деталей места: ' + error.message);
+                });
+        }
+
+        // Функция для отображения деталей в боковой панели
+        function displayPlaceDetails(place) {
+            var sidebarContent = document.getElementById('sidebar-content');
+
+            // Создаем HTML для изображений
+            var imagesHtml = '';
+            if (place.imgs && place.imgs.length > 0) {
+                imagesHtml = `
+                    <div class="image-gallery">
+                        ${place.imgs.map(img =>
+                            `<img src="${img}" class="place-image" alt="${place.title}">`
+                        ).join('')}
+                    </div>
+                `;
+            }
+
+            // Создаем HTML для детальной информации
+            var detailsHtml = `
+                <div class="place-card">
+                    <h2 class="place-title">${place.title}</h2>
+                    ${imagesHtml}
+                    <div class="place-description">
+                        <strong>Короткое описание:</strong><br>
+                        ${place.description_short || 'Нет описания'}
+                    </div>
+                    <div class="place-description">
+                        <strong>Полное описание:</strong><br>
+                        ${place.description_long || 'Нет подробного описания'}
+                    </div>
+                    <div class="place-coordinates">
+                        <strong>Координаты:</strong> ${place.coordinates.lat.toFixed(6)}, ${place.coordinates.lng.toFixed(6)}
+                    </div>
+                </div>
+            `;
+
+            sidebarContent.innerHTML = detailsHtml;
+        }
+
+        // Функции для управления боковой панелью
+        function openSidebar() {
+            document.getElementById('sidebar').classList.add('active');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('active');
+            // Сбрасываем подсветку маркера
+            if (currentMarker) {
+                currentMarker.setIcon(defaultIcon);
+                currentMarker = null;
+            }
+        }
+
+        // Создаем кастомные иконки для маркеров
+        var defaultIcon = L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        var highlightedIcon = L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        // Устанавливаем дефолтную иконку для всех маркеров
+        L.Marker.prototype.options.icon = defaultIcon;
+
+        // Закрываем боковую панель при клике на карту (но не на маркер)
+        map.on('click', function(e) {
+            if (e.originalEvent && !e.originalEvent.target.closest('.leaflet-marker-icon')) {
+                closeSidebar();
+            }
+        });
+    </script>
+</body>
+</html>
