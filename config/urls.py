@@ -7,9 +7,11 @@ from django.conf.urls.static import static
 
 # Основные маршруты приложения
 urlpatterns = [
-    path('admin/', admin.site.urls),                        # Административный интерфейс Django
-    path('', include('map_app.urls')),                      # Маршруты основного приложения карты
-    path('ckeditor5/', include('django_ckeditor_5.urls')),  # Маршруты для загрузки файлов CKEditor
+    path("admin/", admin.site.urls),  # Административный интерфейс Django
+    path("", include("map_app.urls")),  # Маршруты основного приложения карты
+    path(
+        "ckeditor5/", include("django_ckeditor_5.urls")
+    ),  # Маршруты для загрузки файлов CKEditor
 ]
 
 # В режиме разработки обслуживаем медиафайлы через Django

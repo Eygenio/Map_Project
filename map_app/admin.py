@@ -12,7 +12,7 @@ class ImageForm(forms.ModelForm):
 
     class Meta:
         model = Image
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ImageInline(admin.TabularInline):
@@ -21,7 +21,7 @@ class ImageInline(admin.TabularInline):
     model = Image
     form = ImageForm
     extra = 0
-    readonly_fields = ['image_preview']
+    readonly_fields = ["image_preview"]
 
     def image_preview(self, obj):
         """Генерирует HTML для превью изображения в админке"""
@@ -29,40 +29,33 @@ class ImageInline(admin.TabularInline):
         if obj.image:
             return format_html(
                 '<img src="{}" style="max-height: 100px; max-width: 100px;" />',
-                obj.image.url
+                obj.image.url,
             )
         return "Нет изображения"
-    image_preview.short_description = 'Превью'
+
+    image_preview.short_description = "Превью"
 
     class Media:
         """Подключение JavaScript и CSS для Drag & Drop сортировки"""
 
         js = (
-            'https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js',
-            'admin/js/image_sortable.js',
+            "https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js",
+            "admin/js/image_sortable.js",
         )
-        css = {
-            'all': (
-                'admin/css/image_sortable.css',
-            )
-        }
+        css = {"all": ("admin/css/image_sortable.css",)}
 
 
 @admin.register(Place)
 class PlaceAdmin(admin.ModelAdmin):
     """Админка для модели Place с кастомными настройками"""
 
-    list_display = ['title', 'lng', 'lat']
-    list_filter = ['title']
-    search_fields = ['title', 'description_short']
+    list_display = ["title", "lng", "lat"]
+    list_filter = ["title"]
+    search_fields = ["title", "description_short"]
     inlines = [ImageInline]
     fieldsets = [
-        (None, {
-            'fields': ['title', 'description_short', 'description_long']
-        }),
-        ('Координаты', {
-            'fields': ['lng', 'lat']
-        }),
+        (None, {"fields": ["title", "description_short", "description_long"]}),
+        ("Координаты", {"fields": ["lng", "lat"]}),
     ]
 
     def get_urls(self):
@@ -70,29 +63,33 @@ class PlaceAdmin(admin.ModelAdmin):
 
         urls = super().get_urls()
         custom_urls = [
-            path('update_image_order/', self.update_image_order, name='update_image_order'),
+            path(
+                "update_image_order/",
+                self.update_image_order,
+                name="update_image_order",
+            ),
         ]
         return custom_urls + urls
 
     def update_image_order(self, request):
         """Обработчик AJAX запроса для обновления порядка изображений"""
 
-        if request.method == 'POST':
-            order_data = request.POST.getlist('order[]')
+        if request.method == "POST":
+            order_data = request.POST.getlist("order[]")
             for index, image_id in enumerate(order_data):
                 Image.objects.filter(id=image_id).update(position=index)
-            return JsonResponse({'status': 'success'})
-        return JsonResponse({'status': 'error'})
+            return JsonResponse({"status": "success"})
+        return JsonResponse({"status": "error"})
 
 
 @admin.register(Image)
 class ImageAdmin(admin.ModelAdmin):
     """Админка для модели Image с превью изображений"""
 
-    list_display = ['place', 'position', 'image_preview']
-    list_editable = ['position']
-    list_filter = ['place']
-    readonly_fields = ['image_preview']
+    list_display = ["place", "position", "image_preview"]
+    list_editable = ["position"]
+    list_filter = ["place"]
+    readonly_fields = ["image_preview"]
 
     def image_preview(self, obj):
         """Генерирует HTML для превью изображения увеличенного размера"""
@@ -100,8 +97,8 @@ class ImageAdmin(admin.ModelAdmin):
         if obj.image:
             return format_html(
                 '<img src="{}" style="max-height: 200px; max-width: 200px;" />',
-                obj.image.url
+                obj.image.url,
             )
         return "Нет изображения"
 
-    image_preview.short_description = 'Превью'
+    image_preview.short_description = "Превью"

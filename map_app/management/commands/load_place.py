@@ -9,17 +9,17 @@ import json
 class Command(BaseCommand):
     """Кастомная команда Django для загрузки данных мест из JSON URL"""
 
-    help = 'Load place data from JSON URL'
+    help = "Load place data from JSON URL"
 
     def add_arguments(self, parser):
         """Добавление аргументов командной строки"""
 
-        parser.add_argument('url', type=str, help='URL to JSON file')
+        parser.add_argument("url", type=str, help="URL to JSON file")
 
     def handle(self, *args, **options):
         """Основной обработчик команды"""
 
-        url = options['url']
+        url = options["url"]
 
         try:
             response = requests.get(url)
@@ -28,21 +28,21 @@ class Command(BaseCommand):
 
             # Создаем или обновляем место
             place, created = Place.objects.get_or_create(
-                title=place_data['title'],
+                title=place_data["title"],
                 defaults={
-                    'description_short': place_data.get('description_short', ''),
-                    'description_long': place_data.get('description_long', ''),
-                    'lng': place_data['coordinates']['lng'],
-                    'lat': place_data['coordinates']['lat'],
-                }
+                    "description_short": place_data.get("description_short", ""),
+                    "description_long": place_data.get("description_long", ""),
+                    "lng": place_data["coordinates"]["lng"],
+                    "lat": place_data["coordinates"]["lat"],
+                },
             )
 
             # Загружаем изображения
-            for img_url in place_data['imgs']:
+            for img_url in place_data["imgs"]:
                 img_response = requests.get(img_url)
                 img_response.raise_for_status()
 
-                img_name = img_url.split('/')[-1]
+                img_name = img_url.split("/")[-1]
                 image = Image(place=place)
                 image.image.save(img_name, ContentFile(img_response.content), save=True)
 
@@ -52,6 +52,4 @@ class Command(BaseCommand):
             )
 
         except Exception as e:
-            self.stdout.write(
-                self.style.ERROR(f'Ошибка при загрузке данных: {str(e)}')
-            )
+            self.stdout.write(self.style.ERROR(f"Ошибка при загрузке данных: {str(e)}"))
