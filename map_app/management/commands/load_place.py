@@ -7,12 +7,18 @@ import json
 
 
 class Command(BaseCommand):
+    """Кастомная команда Django для загрузки данных мест из JSON URL"""
+
     help = 'Load place data from JSON URL'
 
     def add_arguments(self, parser):
+        """Добавление аргументов командной строки"""
+
         parser.add_argument('url', type=str, help='URL to JSON file')
 
     def handle(self, *args, **options):
+        """Основной обработчик команды"""
+
         url = options['url']
 
         try:

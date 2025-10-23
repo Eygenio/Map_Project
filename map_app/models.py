@@ -4,6 +4,8 @@ from django_ckeditor_5.fields import CKEditor5Field
 
 
 class Place(models.Model):
+    """Модель места на карте с координатами и описаниями"""
+
     title = models.CharField('Название', max_length=200)
     description_short = models.TextField('Короткое описание', blank=True)
     description_long = CKEditor5Field('Полное описание', blank=True, config_name='default')
@@ -15,10 +17,13 @@ class Place(models.Model):
         verbose_name_plural = 'Места'
 
     def __str__(self):
+        """Строковое представление объекта для админки и отладки"""
         return self.title
 
 
 class Image(models.Model):
+    """Модель изображения, связанная с местом, с поддержкой сортировки"""
+
     place = models.ForeignKey(
         Place,
         on_delete=models.CASCADE,
@@ -34,4 +39,5 @@ class Image(models.Model):
         ordering = ['position']
 
     def __str__(self):
+        """Строковое представление для админки"""
         return f"{self.place.title} - Изображение {self.position}"

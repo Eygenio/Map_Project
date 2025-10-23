@@ -7,10 +7,14 @@ import json
 
 
 class IndexView(TemplateView):
+    """Главная страница с картой - использует шаблонный класс Django"""
+
     template_name = 'index.html'
 
 
 def places_geojson(request):
+    """API endpoint для получения всех мест в формате GeoJSON"""
+
     places = Place.objects.prefetch_related('images').all()
 
     features = []
@@ -38,6 +42,8 @@ def places_geojson(request):
 
 
 def place_detail(request, place_id):
+    """API endpoint для получения детальной информации о конкретном месте"""
+
     place = get_object_or_404(Place.objects.prefetch_related('images'), id=place_id)
 
     place_data = {
