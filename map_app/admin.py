@@ -49,13 +49,13 @@ class ImageInline(admin.TabularInline):
 class PlaceAdmin(admin.ModelAdmin):
     """Админка для модели Place с кастомными настройками"""
 
-    list_display = ["title", "lng", "lat"]
+    list_display = ["title", "lat", "lng"]
     list_filter = ["title"]
     search_fields = ["title", "description_short"]
     inlines = [ImageInline]
     fieldsets = [
         (None, {"fields": ["title", "description_short", "description_long"]}),
-        ("Координаты", {"fields": ["lng", "lat"]}),
+        ("Координаты", {"fields": ["lat", "lng"]}),
     ]
 
     def get_urls(self):

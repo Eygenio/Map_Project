@@ -11,8 +11,8 @@ class Place(models.Model):
     description_long = CKEditor5Field(
         "Полное описание", blank=True, config_name="default"
     )
-    lng = models.FloatField("Долгота")
     lat = models.FloatField("Широта")
+    lng = models.FloatField("Долгота")
 
     class Meta:
         verbose_name = "Место"
